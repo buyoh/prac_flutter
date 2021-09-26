@@ -1,7 +1,9 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
+
 import 'package:prac_flutter/component/MindTree.dart';
+import 'package:prac_flutter/store/store.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -22,57 +24,58 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // int _counter = 0;
-  MindTreeData _data =
-  MindTreeData.fromJson(
-      json.decode("""
+  String _title = "/";
+  Store<DisplayedPageState> _displayedPageStore;
+  MindTreeData _data = MindTreeData.fromJson(json.decode("""
           {"label": "item1", "children":[
             {"label": "item1a", "children": []},
             {"label": "item1b", "children": []},
             {"label": "item1c", "children": [
               {"label": "item1c1", "children": []}
             ]}
-          ]}""")
-  );
-  
-  _MyHomePageState() {
+          ]}"""));
+
+  _MyHomePageState() : _displayedPageStore = createDisplayedPageStore() {
+    _applyFromDisplayedPageStore();
+    _displayedPageStore.onChange.listen((event) {
+      setState(() {
+        _applyFromDisplayedPageStore();
+      });
+    });
   }
 
+  void _applyFromDisplayedPageStore() {
+    _title = _displayedPageStore.state.title;
+  }
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  // }
+
   void _incrementCounter() {
-    // setState(() {
-    //   // This call to setState tells the Flutter framework that something has
-    //   // changed in this State, which causes it to rerun the build method below
-    //   // so that the display can reflect the updated values. If we changed
-    //   // _counter without calling setState(), then the build method would not be
-    //   // called again, and so nothing would appear to happen.
-    //   _counter++;
-    // });
+    // TODO: example
+    _displayedPageStore.dispatch(DisplayedPageAction.updateTitle('foobar'));
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text(widget.title + " - " + _title),
       ),
       // scrollDirection: Axis.horizontal,
       body: SingleChildScrollView(
-          // scrollDirection: Axis.horizontal,
-          child: MindTree(_data, 0),
+        // scrollDirection: Axis.horizontal,
+        child: MindTree(_data, 0),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
