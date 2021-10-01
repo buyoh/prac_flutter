@@ -3,29 +3,13 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:prac_flutter/component/AppendNewNodeDialog.dart';
 import 'package:prac_flutter/component/EditNodeDialog.dart';
-
-class MindTreeData {
-  String _label;
-  List<MindTreeData> _children;
-  MindTreeData(String label)
-      : _label = label,
-        _children = [];
-  String get label => _label;
-  MindTreeData.fromJson(Map<String, dynamic> json)
-      : _label = json['label'],
-        _children = (json['children'] as List<dynamic>)
-            .map((j) => MindTreeData.fromJson(j))
-            .toList();
-
-  Map<String, dynamic> toJson() => {
-        'label': _label,
-        'children': _children.map((e) => e),
-      };
-}
+import 'package:prac_flutter/type/MindTreeData.dart';
 
 class AddButton extends StatelessWidget {
   final void Function() _onPressed;
+
   AddButton({required void Function() onPressed}) : _onPressed = onPressed;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -39,31 +23,28 @@ class AddButton extends StatelessWidget {
 
 class MindTreeNode extends StatelessWidget {
   static final TextStyle _textStyle = TextStyle(fontSize: 20);
-  final MindTreeData _data;
+  final MindTreeTreeData _data;
   final int _depth;
   final bool _isTerminal;
-  MindTreeNode(MindTreeData data, int depth, {bool? isTerminal})
-      : _data = data,
-        _depth = depth,
-        _isTerminal = isTerminal ?? false;
+  final void Function()? _onPressed;
+  final void Function()? _onLongPress;
 
-  void _editNode(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) =>
-            EditNodeDialogWithState(onComplete: (String? label) {
-              log("edit=$label");
-            }).start(context));
-  }
+  MindTreeNode(this._data, this._depth,
+      {bool? isTerminal,
+      void Function()? onPressed,
+      void Function()? onLongPress})
+      : _isTerminal = isTerminal ?? false,
+        _onPressed = onPressed,
+        _onLongPress = onLongPress;
 
   @override
   Widget build(BuildContext context) => OutlinedButton(
       style: ButtonStyle(
           // padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.zero),
-          backgroundColor: MaterialStateProperty.all<Color>(_depth % 2 == 0 ? Colors.lightGreen : Colors.lightGreenAccent)
-      ),
-      onPressed: () {}, // TODO: toast suggest long press
-      onLongPress: () => _editNode(context),
+          backgroundColor: MaterialStateProperty.all<Color>(
+              _depth % 2 == 0 ? Colors.lightGreen : Colors.lightGreenAccent)),
+      onPressed: _onPressed,
+      onLongPress: _onLongPress,
       child: Container(
           alignment: Alignment.centerLeft,
           // decoration: BoxDecoration(
@@ -76,14 +57,30 @@ class MindTreeNode extends StatelessWidget {
 }
 
 class MindTree extends StatelessWidget {
-  final MindTreeData _data;
+  final MindTreeTreeData _data;
   final List<MindTree> _children;
   final int _depth;
-  MindTree(MindTreeData data, int depth)
-      : _data = data,
+  final void Function(int id, String label)? _onRequestedToEditNode;
+  final void Function(int parentId, String label)? _onRequestedToAddNewNode;
+  final void Function(int id)? _onRequestedToRemoveNode;
+
+  MindTree(
+    MindTreeTreeData data,
+    int depth, {
+    required void Function(int id, String label)? onRequestedToEditNode,
+    required void Function(int parentId, String label)? onRequestedToAddNewNode,
+    required void Function(int id)? onRequestedToRemoveNode,
+  })  : _data = data,
         _depth = depth,
-        _children =
-            data._children.map((ch) => MindTree(ch, depth + 1)).toList();
+        _children = data.children
+            .map((ch) => MindTree(ch, depth + 1,
+                onRequestedToEditNode: onRequestedToEditNode,
+                onRequestedToAddNewNode: onRequestedToAddNewNode,
+                onRequestedToRemoveNode: onRequestedToRemoveNode))
+            .toList(),
+        _onRequestedToEditNode = onRequestedToEditNode,
+        _onRequestedToAddNewNode = onRequestedToAddNewNode,
+        _onRequestedToRemoveNode = onRequestedToRemoveNode;
 
   void _appendNewNode(BuildContext context) {
     showDialog(
@@ -91,6 +88,22 @@ class MindTree extends StatelessWidget {
         builder: (BuildContext context) =>
             AppendNewNodeDialogWithState(onComplete: (String label) {
               log("label=$label");
+              _onRequestedToAddNewNode?.call(_data.id, label);
+            }).start(context));
+  }
+
+  void _editNode(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) =>
+            EditNodeDialogWithState(onComplete: (String? label) {
+              if (label == null) {
+                log("remove");
+                _onRequestedToRemoveNode?.call(_data.id);
+                return;
+              }
+              log("edit=$label");
+              _onRequestedToEditNode?.call(_data.id, label);
             }).start(context));
   }
 
@@ -107,6 +120,7 @@ class MindTree extends StatelessWidget {
               _data,
               _depth,
               isTerminal: _children.isEmpty,
+              onLongPress: () => _editNode(context),
             ),
             IntrinsicWidth(
                 child: Column(
