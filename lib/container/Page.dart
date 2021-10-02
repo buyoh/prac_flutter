@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-// import 'package:path_provider/path_provider.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:prac_flutter/store/MindTreeStore.dart';
 import 'package:prac_flutter/type/MindTreeData.dart';
 import 'package:redux/redux.dart';
@@ -72,16 +76,38 @@ class _MyHomePageState extends State<MyHomePage> {
   // void _openMindTreeDataFromFile() {}
 
   void _saveMindTreeData() {
+    // TODO: support web (using shared_preferences?)
+    final data = _mindTreeState.state.generateListJson();
     // Directory tempDir = await getTemporaryDirectory();
     // String tempPath = tempDir.path;
-    // Directory appDocDir = await getApplicationDocumentsDirectory();
-    // String appDocPath = appDocDir.path;
+    (() async {
+      Directory appDocDir = await getApplicationDocumentsDirectory();
+      String appDocPath = appDocDir.path;
+      File file = File('$appDocPath/default.json');
+      file.writeAsString(json.encode(data));
+    })();
+  }
+
+  void _openMindTreeData() {
+    // Directory tempDir = await getTemporaryDirectory();
+    // String tempPath = tempDir.path;
+    (() async {
+      Directory appDocDir = await getApplicationDocumentsDirectory();
+      String appDocPath = appDocDir.path;
+      File file = File('$appDocPath/default.json');
+      if (!(await file.exists())) {
+        log('cannot open file: `$file` doesnt exist');
+        return;
+      }
+      final j = json.decode(await file.readAsString());
+      _mindTreeState.dispatch(MindTreeActionReplace(j));
+    })();
   }
 
   @override
   Widget build(BuildContext context) {
     var mindTreeData =
-        MindTreeTreeData.fromJson(_mindTreeState.state.generate());
+        MindTreeTreeData.fromJson(_mindTreeState.state.generateTreeJson());
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -89,8 +115,8 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title + " - " + _title),
       ),
       // scrollDirection: Axis.horizontal,
-      body: SingleChildScrollView(
-        // scrollDirection: Axis.horizontal,
+      body: InteractiveViewer(
+        constrained: false,
         child: MindTree(
           mindTreeData,
           0,
@@ -116,6 +142,11 @@ class _MyHomePageState extends State<MyHomePage> {
           onPressed: _saveMindTreeData,
           tooltip: 'save',
           child: Icon(Icons.save),
+        ),
+        FloatingActionButton(
+          onPressed: _openMindTreeData,
+          tooltip: 'open',
+          child: Icon(Icons.folder_open),
         ),
       ])),
     );

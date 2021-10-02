@@ -10,7 +10,6 @@ class AppendNewNodeDialogWithState {
   AlertDialog start(BuildContext context) => AlertDialog(
       title: Text('Add a new node'),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
-        // Text('sushi'),
         TextField(
           controller: _textEditingController,
           decoration: InputDecoration(

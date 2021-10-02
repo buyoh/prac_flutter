@@ -16,11 +16,12 @@ class EditNodeDialogWithState {
                 hintText: 'label',
               ),
               autofocus: true,
-              keyboardType: TextInputType.text,
-              onSubmitted: (String text) {
-                Navigator.of(context).pop();
-                _onComplete(text);
-              },
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              // onSubmitted: (String text) {
+              //   Navigator.of(context).pop();
+              //   _onComplete(text);
+              // },
             ),
           ]),
           actions: [
