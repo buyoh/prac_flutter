@@ -40,17 +40,12 @@ class MindTreeNode extends StatelessWidget {
   @override
   Widget build(BuildContext context) => OutlinedButton(
       style: ButtonStyle(
-          // padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.zero),
           backgroundColor: MaterialStateProperty.all<Color>(
               _depth % 2 == 0 ? Colors.lightGreen : Colors.lightGreenAccent)),
       onPressed: _onPressed,
       onLongPress: _onLongPress,
       child: Container(
           alignment: Alignment.centerLeft,
-          // decoration: BoxDecoration(
-          //   // border: Border.all(color: Colors.black12),
-          //   // color: Colors.lightGreen,
-          // ),
           width: 200,
           height: _isTerminal ? 200 : double.infinity,
           child: Text(_data.label, style: _textStyle)));

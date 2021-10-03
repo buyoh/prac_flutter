@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'container/Page.dart';
+import 'container/ViewMindTreePage.dart';
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -20,7 +20,10 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'mindmap'),
+      initialRoute: '/',
+      routes: {
+        '/': (BuildContext context) => ViewMindTreePage(),
+      },
     );
   }
 }

@@ -9,27 +9,16 @@ import 'package:prac_flutter/type/MindTreeData.dart';
 import 'package:redux/redux.dart';
 
 import 'package:prac_flutter/component/MindTree.dart';
-import 'package:prac_flutter/store/store.dart';
+import 'package:prac_flutter/store/ViewMindTreePageStore.dart';
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class ViewMindTreePage extends StatefulWidget {
+  ViewMindTreePage({Key? key}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _ViewMindTreePageState createState() => _ViewMindTreePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _ViewMindTreePageState extends State<ViewMindTreePage> {
   String _title = "/";
   Store<DisplayedPageState> _displayedPageStore;
   Store<MindTreeState> _mindTreeState;
@@ -37,7 +26,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _needBackup = false;
   Timer? _backupTimer;
 
-  _MyHomePageState()
+  _ViewMindTreePageState()
       : _displayedPageStore = createDisplayedPageStore(),
         _mindTreeState = createMindTreeStore() {
     _applyFromDisplayedPageStore();
@@ -88,11 +77,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _storeStateToAppStorage();
   }
 
-  void _incrementCounter() {
-    // TODO: example
-    _displayedPageStore.dispatch(DisplayedPageAction.updateTitle('foobar'));
-  }
-
   void _storeStateToAppStorage() {
     final data = _mindTreeState.state.generateListJson();
     _needBackup = false;
@@ -121,11 +105,13 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title + " - " + _title),
+        title: Text("mindmap - " + _title),
       ),
       // scrollDirection: Axis.horizontal,
       body: InteractiveViewer(
         constrained: false,
+        minScale: 1,
+        boundaryMargin: EdgeInsets.fromLTRB(1, 1, 1000, 1000),
         child: MindTree(
           mindTreeData,
           0,
@@ -143,9 +129,9 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: IntrinsicWidth(
           child: Row(children: [
         FloatingActionButton(
-          onPressed: _incrementCounter,
+          onPressed: (){},
           tooltip: 'Increment',
-          child: Icon(Icons.add),
+          child: Icon(Icons.list),
         ),
         // FloatingActionButton(
         //   onPressed: _storeStateToAppStorage,
