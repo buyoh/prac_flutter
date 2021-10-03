@@ -16,7 +16,8 @@ class AppendNewNodeDialogWithState {
             hintText: 'label',
           ),
           autofocus: true,
-          keyboardType: TextInputType.text,
+          keyboardType: TextInputType.multiline,
+          maxLines: null,
           onSubmitted: (String text) {
             Navigator.of(context).pop();
             _onComplete(text);

@@ -1,9 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:prac_flutter/storage/AppStorage.dart';
 import 'package:prac_flutter/store/MindTreeStore.dart';
 import 'package:prac_flutter/type/MindTreeData.dart';
 import 'package:redux/redux.dart';
@@ -34,14 +34,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Store<DisplayedPageState> _displayedPageStore;
   Store<MindTreeState> _mindTreeState;
 
-  // MindTreeTreeData _data = MindTreeTreeData.fromJson(json.decode("""
-  //         {"label": "item1", "children":[
-  //           {"label": "item1a", "children": []},
-  //           {"label": "item1b", "children": []},
-  //           {"label": "item1c", "children": [
-  //             {"label": "item1c1", "children": []}
-  //           ]}
-  //         ]}"""));
+  bool _needBackup = false;
+  Timer? _backupTimer;
 
   _MyHomePageState()
       : _displayedPageStore = createDisplayedPageStore(),
@@ -61,46 +55,61 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _applyFromDisplayedPageStore() {
     _title = _displayedPageStore.state.title;
+    _needBackup = true;
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  // }
+  @override
+  void initState() {
+    super.initState();
+    _backupTimer = Timer.periodic(
+        Duration(seconds: 10),
+        (Timer timer) {
+          if (_backupTimer == null) {
+            // may not occur
+            timer.cancel();
+            return;
+          }
+          _processBackupInterval();
+        }
+    );
+    _restoreStateFromAppStorage();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _backupTimer?.cancel();
+    _backupTimer = null;
+    _storeStateToAppStorage();
+  }
+
+  void _processBackupInterval() {
+    if (_needBackup)
+      _storeStateToAppStorage();
+  }
 
   void _incrementCounter() {
     // TODO: example
     _displayedPageStore.dispatch(DisplayedPageAction.updateTitle('foobar'));
   }
 
-  // void _openMindTreeDataFromFile() {}
-
-  void _saveMindTreeData() {
-    // TODO: support web (using shared_preferences?)
+  void _storeStateToAppStorage() {
     final data = _mindTreeState.state.generateListJson();
-    // Directory tempDir = await getTemporaryDirectory();
-    // String tempPath = tempDir.path;
+    _needBackup = false;
     (() async {
-      Directory appDocDir = await getApplicationDocumentsDirectory();
-      String appDocPath = appDocDir.path;
-      File file = File('$appDocPath/default.json');
-      file.writeAsString(json.encode(data));
+      final storage = AppStorage.getInstance();
+      storage.store('mindTreeData-default', json.encode(data));
+      log('store complete');
     })();
   }
 
-  void _openMindTreeData() {
-    // Directory tempDir = await getTemporaryDirectory();
-    // String tempPath = tempDir.path;
+  void _restoreStateFromAppStorage() {
     (() async {
-      Directory appDocDir = await getApplicationDocumentsDirectory();
-      String appDocPath = appDocDir.path;
-      File file = File('$appDocPath/default.json');
-      if (!(await file.exists())) {
-        log('cannot open file: `$file` doesnt exist');
-        return;
-      }
-      final j = json.decode(await file.readAsString());
-      _mindTreeState.dispatch(MindTreeActionReplace(j));
+      final storage = AppStorage.getInstance();
+      final t = await storage.load('mindTreeData-default');
+      if (t == null) return;
+      _mindTreeState.dispatch(MindTreeActionReplace(json.decode(t)));
+      log('restore complete');
     })();
   }
 
@@ -138,16 +147,16 @@ class _MyHomePageState extends State<MyHomePage> {
           tooltip: 'Increment',
           child: Icon(Icons.add),
         ),
-        FloatingActionButton(
-          onPressed: _saveMindTreeData,
-          tooltip: 'save',
-          child: Icon(Icons.save),
-        ),
-        FloatingActionButton(
-          onPressed: _openMindTreeData,
-          tooltip: 'open',
-          child: Icon(Icons.folder_open),
-        ),
+        // FloatingActionButton(
+        //   onPressed: _storeStateToAppStorage,
+        //   tooltip: 'save',
+        //   child: Icon(Icons.save),
+        // ),
+        // FloatingActionButton(
+        //   onPressed: _restoreStateFromAppStorage,
+        //   tooltip: 'open',
+        //   child: Icon(Icons.folder_open),
+        // ),
       ])),
     );
   }

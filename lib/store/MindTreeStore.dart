@@ -79,11 +79,11 @@ class MindTreeState {
     rootId = -1;
     for (MindTreeListElem e in list) {
       if (e.parentId == e.id) rootId = e.id;
-      nextId = math.max(nextId, e.parentId);
+      nextId = math.max(nextId, e.id);
     }
     nextId += 1;
     if (rootId < 0) {
-      log('root doesnt exiest');
+      log('root doesnt exist');
       throw Error();
     }
     // TODO: validation
