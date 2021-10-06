@@ -1,30 +1,23 @@
-// import 'package:flutter_flux/flutter_flux.dart';
 import 'package:redux/redux.dart';
 
 class DisplayedPageState {
-  DisplayedPageState({required this.title});
-  final String title;
+  final String? mindTreeKey;
+
+  DisplayedPageState({this.mindTreeKey});
+
+  DisplayedPageState.initialState():this.mindTreeKey = null;
 }
 
-enum DisplayedPageActionType {
-  updateTitle,
-}
+class DisplayedPageActionChangeMindTreeKey {
+  String mindTreeKey;
 
-class DisplayedPageAction {
-  DisplayedPageActionType type;
-  String newTitle;
-
-  DisplayedPageAction({required this.type, required this.newTitle});
-
-  static DisplayedPageAction updateTitle(String title) => DisplayedPageAction(
-      type: DisplayedPageActionType.updateTitle, newTitle: title);
+  DisplayedPageActionChangeMindTreeKey({required this.mindTreeKey});
 }
 
 DisplayedPageState displayedPageActionReducer(
     DisplayedPageState state, dynamic action) {
-  if (!(action is DisplayedPageAction)) return state;
-  if (action.type == DisplayedPageActionType.updateTitle) {
-    return DisplayedPageState(title: action.newTitle);
+  if (action is DisplayedPageActionChangeMindTreeKey) {
+    return DisplayedPageState(mindTreeKey: action.mindTreeKey);
   }
   return state;
 }
@@ -32,7 +25,7 @@ DisplayedPageState displayedPageActionReducer(
 Store<DisplayedPageState> createDisplayedPageStore() {
   return Store<DisplayedPageState>(
     displayedPageActionReducer,
-    initialState: DisplayedPageState(title: 'undefined'),
+    initialState: DisplayedPageState.initialState(),
     middleware: [],
   );
 }

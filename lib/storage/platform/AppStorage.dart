@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AppStorage {
   static AppStorage? _instance;
-  static AppStorage getInstance() {
+  static AppStorage get instance {
     if (_instance == null)
       _instance = AppStorage._();
     return _instance!;
@@ -13,6 +13,11 @@ class AppStorage {
   void store(String key, String value) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     await pref.setString(key, value);
+  }
+
+  Future<bool> containsKey(String key) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    return pref.containsKey(key);
   }
 
   Future<String?> load(String key) async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prac_flutter/container/SelectMindTreePage.dart';
 
 import 'container/ViewMindTreePage.dart';
 
@@ -20,9 +21,10 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',
+      initialRoute: '/mindTree/',
       routes: {
-        '/': (BuildContext context) => ViewMindTreePage(),
+        '/mindTree/': (BuildContext context) => SelectMindTreePage(),
+        '/mindTree/Edit': (BuildContext context) => ViewMindTreePage(arguments: ModalRoute.of(context)?.settings.arguments),
       },
     );
   }

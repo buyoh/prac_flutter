@@ -1,4 +1,3 @@
-// import 'package:flutter_flux/flutter_flux.dart';
 import 'dart:developer';
 import 'dart:math' as math;
 
@@ -110,10 +109,10 @@ class MindTreeActionRemoveNode {
   MindTreeActionRemoveNode(this.targetId);
 }
 
-class MindTreeActionReplace {
-  Map<String, dynamic> json;
+class MindTreeActionRestore {
+  MindTreeState state;
 
-  MindTreeActionReplace(this.json);
+  MindTreeActionRestore(this.state);
 }
 
 MindTreeState mindTreeActionReducer(MindTreeState state, dynamic action) {
@@ -142,7 +141,7 @@ MindTreeState mindTreeActionReducer(MindTreeState state, dynamic action) {
       // throw Error();
       return state;
     }
-    if (!state.list.any((e) => e.parentId != action.targetId)) {
+    if (state.list.any((e) => e.parentId == action.targetId)) {
       log('not implemented: cannot remove node has children');
       // throw Error();
       return state;
@@ -151,8 +150,8 @@ MindTreeState mindTreeActionReducer(MindTreeState state, dynamic action) {
         state.list.where((e) => e.id != action.targetId).toList());
   }
 
-  if (action is MindTreeActionReplace) {
-    return MindTreeState.fromListJson(action.json);
+  if (action is MindTreeActionRestore) {
+    return action.state;
   }
 
   return state;
