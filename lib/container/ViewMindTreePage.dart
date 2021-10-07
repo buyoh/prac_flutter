@@ -6,7 +6,6 @@ import 'package:prac_flutter/storage/MindTreeStorage.dart';
 import 'package:prac_flutter/store/MindTreeStore.dart';
 import 'package:prac_flutter/type/MindTreeData.dart';
 import 'package:redux/redux.dart';
-
 import 'package:prac_flutter/component/MindTree.dart';
 import 'package:prac_flutter/store/ViewMindTreePageStore.dart';
 
@@ -58,7 +57,6 @@ class _ViewMindTreePageState extends State<ViewMindTreePage> {
   }
 
   void _applyFromDisplayedPageStore() {
-    // _title = _displayedPageStore.state.title;
     _needBackup = true;
   }
 
@@ -66,9 +64,9 @@ class _ViewMindTreePageState extends State<ViewMindTreePage> {
   void initState() {
     super.initState();
 
-    _backupTimer = Timer.periodic(Duration(seconds: 10), (Timer timer) {
+    _backupTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
       if (_backupTimer == null) {
-        // may not occur
+        // might not occur
         timer.cancel();
         return;
       }
@@ -109,58 +107,28 @@ class _ViewMindTreePageState extends State<ViewMindTreePage> {
       final storage = MindTreeStorage.instance;
       final t = await storage.load(mindTreeKey);
       if (t == null) return;
-      _mindTreeStateStore
-          .dispatch(MindTreeActionRestore(t));
+      _mindTreeStateStore.dispatch(MindTreeActionRestore(t));
       log('restore complete');
-    })();
-  }
-
-  void _navigateSelectMindTree() {
-    (() async {
-      // TODO:
-      final _ = await Navigator.pushNamed(context, '/mindTree/list',
-          arguments: {'selected': 'default'});
     })();
   }
 
   @override
   Widget build(BuildContext context) {
-    var mindTreeData =
-        MindTreeTreeData.fromJson(_mindTreeStateStore.state.generateTreeJson());
+    var mindTreeData = _mindTreeKey == null
+        ? null
+        : MindTreeTreeData.fromJson(
+            _mindTreeStateStore.state.generateTreeJson());
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text("mindmap - "),
+        title: Text("mindMap - $_mindTreeKey"),
       ),
-      // scrollDirection: Axis.horizontal,
-      body: _mindTreeKey == null
+      body: mindTreeData == null
           ? Container()
-          : buildMindTree(context, mindTreeData),
-      floatingActionButton: IntrinsicWidth(
-          child: Row(children: [
-        FloatingActionButton(
-          onPressed: () {
-            _navigateSelectMindTree();
-          },
-          tooltip: 'list',
-          child: Icon(Icons.list),
-        ),
-        // FloatingActionButton(
-        //   onPressed: _storeStateToAppStorage,
-        //   tooltip: 'save',
-        //   child: Icon(Icons.save),
-        // ),
-        // FloatingActionButton(
-        //   onPressed: _restoreStateFromAppStorage,
-        //   tooltip: 'open',
-        //   child: Icon(Icons.folder_open),
-        // ),
-      ])),
+          : _buildMindTree(context, mindTreeData),
     );
   }
 
-  Widget buildMindTree(BuildContext context, MindTreeTreeData mindTreeData) =>
+  Widget _buildMindTree(BuildContext context, MindTreeTreeData mindTreeData) =>
       InteractiveViewer(
         constrained: false,
         minScale: 1,

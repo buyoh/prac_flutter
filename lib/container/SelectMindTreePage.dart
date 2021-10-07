@@ -65,7 +65,6 @@ class _SelectMindTreePageState extends State<SelectMindTreePage> {
   }
 
   void _requestToSelectMindTree(BuildContext context, String key) {
-    log("selected $key");
     // async
     Navigator.of(context).pushNamed('/mindTree/Edit',
         arguments: ViewMindTreePageArgument(mindTreeKey: key));
@@ -73,34 +72,38 @@ class _SelectMindTreePageState extends State<SelectMindTreePage> {
 
   @override
   Widget build(BuildContext context) {
-    log("cnt=${_mindTreeListStateStore.state.list.length}");
     return Scaffold(
       appBar: AppBar(
         title: Text("mindMap"),
       ),
       // scrollDirection: Axis.horizontal,
       body: ListView(
-        children: [
-          ..._mindTreeListStateStore.state.list
-              .map((e) => OutlinedButton(
-                    child: Text(e.title),
-                    onPressed: () {
-                      _requestToSelectMindTree(context, e.title);
-                    },
-                  ))
-              .toList(),
-          OutlinedButton(
-            // TODO: move to bottom???
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Icon(Icons.create_new_folder),
-              Text("New mindTree")
-            ]),
-            onPressed: () {
-              _requestToAddNewMindTree(context);
-            },
-          ),
-        ],
+        children: _mindTreeListStateStore.state.list
+            .map((e) => _buildMindTreeListElem(context, e))
+            .toList(),
       ),
+      floatingActionButton: IntrinsicWidth(
+          child: Row(children: [
+        FloatingActionButton(
+          onPressed: () {
+            _requestToAddNewMindTree(context);
+          },
+          tooltip: 'New mindTree',
+          child: Icon(Icons.create_new_folder),
+        ),
+      ])),
     );
   }
+
+  Widget _buildMindTreeListElem(
+          BuildContext context, MindTreeListElemIndex elemIndex) =>
+      OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.all(20),
+        ),
+        child: Text(elemIndex.title),
+        onPressed: () {
+          _requestToSelectMindTree(context, elemIndex.title);
+        },
+      );
 }
