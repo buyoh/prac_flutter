@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 class EditNodeDialogWithState {
   final void Function(String?) _onComplete;
-  final TextEditingController _textEditingController = TextEditingController();
+  final TextEditingController _textEditingController;
 
-  EditNodeDialogWithState({required void Function(String?) onComplete})
-      : _onComplete = onComplete;
+  EditNodeDialogWithState({required void Function(String?) onComplete, String? initialLabel})
+      : _onComplete = onComplete,
+      _textEditingController = TextEditingController(text: initialLabel);
 
   AlertDialog start(BuildContext context) => AlertDialog(
           title: Text('Edit a node'),
@@ -18,10 +19,6 @@ class EditNodeDialogWithState {
               autofocus: true,
               keyboardType: TextInputType.multiline,
               maxLines: null,
-              // onSubmitted: (String text) {
-              //   Navigator.of(context).pop();
-              //   _onComplete(text);
-              // },
             ),
           ]),
           actions: [

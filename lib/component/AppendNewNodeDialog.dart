@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 class AppendNewNodeDialogWithState {
   final void Function(String) _onComplete;
-  final TextEditingController _textEditingController = TextEditingController();
+  final TextEditingController _textEditingController;
 
-  AppendNewNodeDialogWithState({required void Function(String) onComplete}) :
-        _onComplete = onComplete;
+  AppendNewNodeDialogWithState({required void Function(String) onComplete, String? initialLabel}) :
+        _onComplete = onComplete,
+        _textEditingController = TextEditingController(text: initialLabel);
 
   AlertDialog start(BuildContext context) => AlertDialog(
       title: Text('Add a new node'),

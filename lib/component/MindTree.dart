@@ -91,7 +91,7 @@ class MindTree extends StatelessWidget {
     showDialog(
         context: context,
         builder: (BuildContext context) =>
-            EditNodeDialogWithState(onComplete: (String? label) {
+            EditNodeDialogWithState(initialLabel: _data.label, onComplete: (String? label) {
               if (label == null) {
                 log("remove");
                 _onRequestedToRemoveNode?.call(_data.id);
