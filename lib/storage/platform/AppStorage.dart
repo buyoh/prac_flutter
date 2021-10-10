@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppStorage {
@@ -10,7 +12,7 @@ class AppStorage {
   }
   AppStorage._();
 
-  void store(String key, String value) async {
+  Future<void> store(String key, String value) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     await pref.setString(key, value);
   }
@@ -25,8 +27,29 @@ class AppStorage {
     return pref.containsKey(key) ? pref.getString(key) : null;
   }
 
-  void eraseAll() async {
+  Future<void> eraseAll() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.clear();
+  }
+
+  Future<String> dump() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    Map<String, String> li = {};
+    for (final key in pref.getKeys()) {
+      final str = pref.getString(key);
+      if (str != null) li[key] = str;
+    }
+    return json.encode(li);
+  }
+  Future<void> restoreFromDumped(String dumped) async {
+    final listRaw = json.decode(dumped);
+    for (final pair in listRaw.entries) {
+      pair.key as String;
+      pair.value as String;
+    }
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    for (final pair in listRaw.entries) {
+      await pref.setString(pair.key, pair.value);
+    }
   }
 }

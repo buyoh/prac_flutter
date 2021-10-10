@@ -2,8 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:prac_flutter/component/AppendNewMindTreeDialog.dart';
+import 'package:prac_flutter/component/LogDialog.dart';
 import 'package:prac_flutter/container/ViewMindTreePage.dart';
 import 'package:prac_flutter/storage/MindTreeStorage.dart';
+import 'package:prac_flutter/storage/platform/AppStorage.dart';
 import 'package:prac_flutter/store/MindTreeListStore.dart';
 import 'package:redux/redux.dart';
 
@@ -70,10 +72,56 @@ class _SelectMindTreePageState extends State<SelectMindTreePage> {
         arguments: ViewMindTreePageArgument(mindTreeKey: key));
   }
 
+  void _requestToDisplayStorageDump(BuildContext context) {
+    (() async {
+      final dumpData = await AppStorage.instance.dump();
+      showDialog(
+          context: context,
+          builder: (BuildContext context) => LogDialogWithState(
+                  title: 'dump/restore app storage as json',
+                  onComplete: (String text) {
+                    // NOTE: need to notify that it failed
+                    AppStorage.instance.restoreFromDumped(text);
+                    // update redux stores.
+                    _restoreFromStorage();
+                  },
+                  initialText: dumpData)
+              .start(context));
+    })();
+  }
+
+  void _requestToEraseStorage(BuildContext context) {
+    (() async {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) => LogDialogWithState(
+                  title: 'Do you want to erase all data?',
+                  readOnly: true,
+                  onComplete: (String text) async {
+                    await AppStorage.instance.eraseAll();
+                    _restoreFromStorage();
+                  },
+                  initialText: '')
+              .start(context));
+    })();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(
+              onPressed: () {
+                _requestToDisplayStorageDump(context);
+              },
+              icon: Icon(Icons.outbox)),
+          IconButton(
+              onPressed: () {
+                _requestToEraseStorage(context);
+              },
+              icon: Icon(Icons.delete_forever))
+        ],
         title: Text("mindMap"),
       ),
       // scrollDirection: Axis.horizontal,
