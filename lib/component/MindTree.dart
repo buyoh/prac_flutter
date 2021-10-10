@@ -21,34 +21,112 @@ class AddButton extends StatelessWidget {
   }
 }
 
-class MindTreeNode extends StatelessWidget {
-  static final TextStyle _textStyle = TextStyle(fontSize: 20);
-  final MindTreeTreeData _data;
-  final int _depth;
-  final bool _isTerminal;
-  final void Function()? _onPressed;
-  final void Function()? _onLongPress;
+@immutable
+class MindTreeNode extends StatefulWidget {
+  static final TextStyle textStyle = TextStyle(fontSize: 20);
+  final MindTreeTreeData data;
+  final int depth;
+  final bool isTerminal;
+  final bool isEditable;
+  final void Function(int id, String label)? onRequestedToChangeNodeLabel;
+  final void Function()? onPressed;
+  final void Function()? onLongPress;
 
-  MindTreeNode(this._data, this._depth,
+  MindTreeNode(this.data, this.depth,
       {bool? isTerminal,
-      void Function()? onPressed,
-      void Function()? onLongPress})
-      : _isTerminal = isTerminal ?? false,
-        _onPressed = onPressed,
-        _onLongPress = onLongPress;
+      this.onPressed,
+      this.onLongPress,
+      required this.isEditable,
+      required this.onRequestedToChangeNodeLabel})
+      : this.isTerminal = isTerminal ?? false;
 
   @override
-  Widget build(BuildContext context) => OutlinedButton(
+  _MindTreeNodeState createState() => _MindTreeNodeState();
+}
+
+class _MindTreeNodeState extends State<MindTreeNode> {
+  final _textEditingController = TextEditingController();
+  bool editing = false;
+
+  Color get nodeColor =>
+      widget.depth % 2 == 0 ? Colors.lightGreen : Colors.lightGreenAccent;
+
+  @override
+  Widget build(BuildContext context) =>
+      editing ? _buildAsEditor(context) : _buildAsButton(context);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _textEditingController.text = widget.data.label;
+  }
+
+  void _changeToEditor() {
+    setState(() {
+      editing = true;
+    });
+  }
+
+  void _changeToButton() {
+    setState(() {
+      editing = false;
+    });
+  }
+
+  void _onChangeNodeLabel() {
+    final newLabel = _textEditingController.text;
+    widget.onRequestedToChangeNodeLabel?.call(widget.data.id, newLabel);
+    _changeToButton();
+  }
+
+  Widget _buildAsButton(BuildContext context) => OutlinedButton(
       style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(
-              _depth % 2 == 0 ? Colors.lightGreen : Colors.lightGreenAccent)),
-      onPressed: _onPressed,
-      onLongPress: _onLongPress,
+          // reset bold
+          textStyle: MaterialStateProperty.all<TextStyle>(TextStyle()),
+          // text color
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+          backgroundColor: MaterialStateProperty.all<Color>(nodeColor)),
+      onPressed: widget.isEditable
+          ? () {
+              _changeToEditor();
+            }
+          : widget.onPressed,
+      onLongPress: widget.onLongPress,
       child: Container(
           alignment: Alignment.centerLeft,
           width: 200,
-          height: _isTerminal ? 200 : double.infinity,
-          child: Text(_data.label, style: _textStyle)));
+          height: widget.isTerminal ? 200 : double.infinity,
+          child: Text(widget.data.label, style: MindTreeNode.textStyle)));
+
+  Widget _buildAsEditor(BuildContext context) => Container(
+      padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
+      color: nodeColor,
+      width: 216,
+      height: widget.isTerminal ? 200 : double.infinity,
+      alignment: Alignment.center,
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        TextField(
+            style: MindTreeNode.textStyle,
+            controller: _textEditingController,
+            autofocus: true,
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            onEditingComplete: _onChangeNodeLabel),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                    primary: Colors.grey, backgroundColor: Colors.white),
+                onPressed: _changeToButton,
+                child: Icon(Icons.clear_rounded)),
+            ElevatedButton(
+                onPressed: _onChangeNodeLabel,
+                child: Icon(Icons.check_circle_outline)),
+          ],
+        )
+      ]));
 }
 
 class MindTree extends StatelessWidget {
@@ -90,8 +168,9 @@ class MindTree extends StatelessWidget {
   void _editNode(BuildContext context) {
     showDialog(
         context: context,
-        builder: (BuildContext context) =>
-            EditNodeDialogWithState(initialLabel: _data.label, onComplete: (String? label) {
+        builder: (BuildContext context) => EditNodeDialogWithState(
+            initialLabel: _data.label,
+            onComplete: (String? label) {
               if (label == null) {
                 log("remove");
                 _onRequestedToRemoveNode?.call(_data.id);
@@ -104,6 +183,7 @@ class MindTree extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // log("${_children.length}  ${_data.label}");
     return Container(
         alignment: Alignment.centerLeft,
         child: IntrinsicHeight(
@@ -114,8 +194,12 @@ class MindTree extends StatelessWidget {
             MindTreeNode(
               _data,
               _depth,
+              isEditable: true,
               isTerminal: _children.isEmpty,
               onLongPress: () => _editNode(context),
+              onRequestedToChangeNodeLabel: (int id, String label) {
+                _onRequestedToEditNode?.call(id, label);
+              },
             ),
             IntrinsicWidth(
                 child: Column(
