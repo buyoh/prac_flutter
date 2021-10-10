@@ -41,7 +41,7 @@ class MindTreeState {
     Map<int, List<int>> children = {};
     for (var elem in list) {
       int i = id2index.length;
-      if (id2index.containsKey(i)) {
+      if (id2index.containsKey(elem.id)) {
         log('id:${elem.id} node is duplicated!');
         continue;
       }

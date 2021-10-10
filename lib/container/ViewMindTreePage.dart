@@ -131,7 +131,7 @@ class _ViewMindTreePageState extends State<ViewMindTreePage> {
   Widget _buildMindTree(BuildContext context, MindTreeTreeData mindTreeData) =>
       InteractiveViewer(
         constrained: false,
-        minScale: 1,
+        minScale: 0.1,
         boundaryMargin: EdgeInsets.fromLTRB(1, 1, 1000, 1000),
         child: MindTree(
           mindTreeData,
