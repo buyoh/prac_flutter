@@ -1,0 +1,42 @@
+name: build-web
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+      - name: Please tell me who you are.
+        run: |
+          git config --global user.email "mai@ukibune.net"
+          git config --global user.name "mai bot-worker"
+
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: web
+      - run: |
+          git merge origin/master -m "Merge branch 'master' into 'web' by Github Actions" ||:
+
+      - run: flutter pub get
+      # - run: flutter test # TODO: FIXME:
+      - run: flutter build web
+
+      - name: move to docs
+        run: |
+          rm -rf docs
+          mv build/web docs
+          sed -i -e 's/<base href=\"\/\">/<base href=\"\/prac_flutter\/\">/' ./docs/index.html
+      - name: commit phase
+        run: |
+          git add docs/*
+          git commit -m 'update a web application into docs' ||:
+      - run: |
+          git push origin || :
