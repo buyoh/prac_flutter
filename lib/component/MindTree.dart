@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:prac_flutter/component/AppendNewNodeDialog.dart';
 import 'package:prac_flutter/component/EditNodeDialog.dart';
@@ -160,7 +158,6 @@ class MindTree extends StatelessWidget {
         context: context,
         builder: (BuildContext context) =>
             AppendNewNodeDialogWithState(onComplete: (String label) {
-              log("label=$label");
               _onRequestedToAddNewNode?.call(_data.id, label);
             }).start(context));
   }
@@ -172,18 +169,15 @@ class MindTree extends StatelessWidget {
             initialLabel: _data.label,
             onComplete: (String? label) {
               if (label == null) {
-                log("remove");
                 _onRequestedToRemoveNode?.call(_data.id);
                 return;
               }
-              log("edit=$label");
               _onRequestedToEditNode?.call(_data.id, label);
             }).start(context));
   }
 
   @override
   Widget build(BuildContext context) {
-    // log("${_children.length}  ${_data.label}");
     return Container(
         alignment: Alignment.centerLeft,
         child: IntrinsicHeight(

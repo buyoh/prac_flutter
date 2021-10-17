@@ -120,7 +120,7 @@ class _ViewMindTreePageState extends State<ViewMindTreePage> {
             _mindTreeStateStore.state.generateTreeJson());
     return Scaffold(
       appBar: AppBar(
-        title: Text("mindMap - $_mindTreeKey"),
+        title: Text("mindTree - $_mindTreeKey"),
       ),
       body: mindTreeData == null
           ? Container()

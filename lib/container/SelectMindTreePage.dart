@@ -122,7 +122,7 @@ class _SelectMindTreePageState extends State<SelectMindTreePage> {
               },
               icon: Icon(Icons.delete_forever))
         ],
-        title: Text("mindMap"),
+        title: Text("mindTree"),
       ),
       // scrollDirection: Axis.horizontal,
       body: ListView(
