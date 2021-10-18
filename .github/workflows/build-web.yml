@@ -23,6 +23,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: web
       - run: |
+          git fetch --prune --unshallow origin web master
           git merge origin/master -m "Merge branch 'master' into 'web' by Github Actions" ||:
 
       - run: flutter pub get
